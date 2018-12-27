@@ -17,10 +17,27 @@ class CaptiveFi:
     def make_menu(self):
         menu = Menu(self.parent)
         self.parent.config(menu=menu)
+
+        # Creating file submenu and menu items
         file = Menu(menu)
         file.add_command(label="Run", command=self.run)
+        file.add_command(label="Save", command=self.run)  # replace with save
+        file.add_command(label="Load", command=self.run)  # replace with load
         file.add_command(label="Exit", command=self.parent.quit)
+
+        # Creating tools submenu and menu items
+        tools = Menu(menu)
+        tools.add_command(label="Set Autoload", command=self.run)  # replace with auto_load
+        tools.add_command(label="Set AutoRun", command=self.run)  # replace with auto_run
+
+        # Creating help submenu and menu items
+        help_menu = Menu(menu)
+        help_menu.add_command(label="About", command=self.run)  # replace with credits
+
+        # Adding in the submenus
         menu.add_cascade(label="File", menu=file)
+        menu.add_cascade(label="Tools", menu=tools)
+        menu.add_cascade(label="Options", menu=help_menu)
 
     def make_grid(self):
         row_origin = 15
