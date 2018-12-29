@@ -1,4 +1,4 @@
-from tkinter import Tk, Label, Entry, Button, Menu  # used for GUI
+from tkinter import Tk, Label, Entry, Button, Menu, Toplevel  # used for GUI
 
 
 class CaptiveFi:
@@ -21,6 +21,7 @@ class CaptiveFi:
         # Creating file submenu and menu items
         file = Menu(menu)
         file.add_command(label="Run", command=self.run)
+        file.add_command(label="Clear", command=self.clear)
         file.add_command(label="Save", command=self.run)  # replace with save
         file.add_command(label="Load", command=self.run)  # replace with load
         file.add_command(label="Exit", command=self.parent.quit)
@@ -32,7 +33,7 @@ class CaptiveFi:
 
         # Creating help submenu and menu items
         help_menu = Menu(menu)
-        help_menu.add_command(label="About", command=self.run)  # replace with credits
+        help_menu.add_command(label="About", command=lambda: self.credits())  # replace with credits
 
         # Adding in the submenus
         menu.add_cascade(label="File", menu=file)
@@ -53,8 +54,32 @@ class CaptiveFi:
         for ele in self.my_input:
             print(ele.get())
 
+    def clear(self):
+        for ele in self.my_input:
+            ele.delete(0, 'end')
+
     def print(self):
         print(self.entry.get())
+
+    # Makes a popup on the current window using title and message
+    @staticmethod
+    def popup_message(title, message, size):
+        window = Toplevel()
+        window.title(title)
+        window.geometry(size)
+        label = Label(window, width=100, text=message, anchor="c")
+        label.pack()
+        confirm_button = Button(window, text="ok", command=lambda: window.destroy())
+        confirm_button.pack()
+        window.focus_force()
+
+    # Opens up credits: including the developers, dependencies, and copyright
+    def credits(self):
+        self.popup_message("Credits",
+                           "CaptiveFi - A script dreaming of freedom from manual captive logins.\n"
+                           "Website: https://github.com/Inviro/CaptiveFi\n"
+                           "Open Source under the GNU General Public License v3.0\n",
+                           "380x90")
 
 
 root = Tk()
