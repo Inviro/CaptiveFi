@@ -4,7 +4,7 @@ from tkinter import Tk, Label, Entry, Button, Menu, Toplevel  # used for GUI
 class CaptiveFi:
     def __init__(self, parent):
         # Initializes variables
-        self.label_names = "Wifi Name", "Username", "Password"  # Name of each label
+        self.label_names = "Wifi Name", "Wifi Password", "Username", "Password"  # Name of each label
         self.parent = parent
         parent.winfo_toplevel().title("captiveFi")  # Sets title
         self.my_input = []
@@ -41,10 +41,16 @@ class CaptiveFi:
         menu.add_cascade(label="Options", menu=help_menu)
 
     def make_grid(self):
-        row_origin = 15
+        row_origin = 15  # Row number to begin making the grid
+        hide_entry = False
         for name in self.label_names:
             temp_label = Label(width=10, text=name+":", anchor="c")
-            temp_entry = Entry(width=10)
+            if hide_entry:
+                temp_entry = Entry(show="*", width=10)
+            else:
+                temp_entry = Entry(width=10)
+            hide_entry = not hide_entry
+
             self.my_input.append(temp_entry)
             temp_label.grid(row=row_origin, column=1, padx="15", pady="5")
             temp_entry.grid(row=row_origin, column=2, padx="15", pady="5")
@@ -82,7 +88,7 @@ class CaptiveFi:
                            "380x90")
 
 
-root = Tk()
-gui = CaptiveFi(root)
-root.geometry("215x100")  # Size of window
+root = Tk()  # New window
+root.geometry("215x125")  # Size of window
+gui = CaptiveFi(root)  # Instance of CaptiveFi using root
 root.mainloop()  # Starts the program
