@@ -1,5 +1,5 @@
 # CaptiveFi
-A simple wifi script to automate logging into captive portals using Python3.
+A script to automate logging into captive portals using Python 3 and a simple gui using tkinter.
 
 Planned features: 
 * Automatic login into captive portals that require manual clicks / username entry
