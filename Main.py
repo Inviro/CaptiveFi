@@ -4,7 +4,7 @@ from tkinter import Tk, Label, Entry, Button, Menu, Toplevel  # used for GUI
 class CaptiveFi:
     def __init__(self, parent):
         # Initializes variables
-        self.label_names = "Wifi Name", "Wifi Password", "Username", "Password"  # Name of each label
+        self.label_names = "Wifi Name", "Wifi Password", "Username", "Password", "Login Page"  # Name of each label
         self.parent = parent
         parent.winfo_toplevel().title("captiveFi")  # Sets title
         self.my_input = []
@@ -57,8 +57,18 @@ class CaptiveFi:
             row_origin += 1
 
     def run(self):
-        for ele in self.my_input:
-            print(ele.get())
+        if self.my_input[0].get():  # Wifi Name exists
+            print("Wifi Name:", self.my_input[0].get())
+            if self.my_input[1].get():  # Wifi is password protected
+                print("Wifi password", self.my_input[1].get())
+            else:  # Wifi is not password protected
+                print("No Wifi password")
+            if self.my_input[2].get() and self.my_input[3].get():  # Login credentials exist
+                print("Login username:", self.my_input[2].get(), "and password:", self.my_input[3].get())
+            else:
+                print("No Login username and password")
+        else:  # Wifi Name does not exist
+            print("Error: Please input wifi name.")
 
     def clear(self):
         for ele in self.my_input:
@@ -89,6 +99,6 @@ class CaptiveFi:
 
 
 root = Tk()  # New window
-root.geometry("215x125")  # Size of window
+root.geometry("215x155")  # Size of window
 gui = CaptiveFi(root)  # Instance of CaptiveFi using root
 root.mainloop()  # Starts the program
