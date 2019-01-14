@@ -1,10 +1,12 @@
-from tkinter import Tk, Label, Entry, Button, Menu, Toplevel  # used for GUI
+from tkinter import Tk, Label, Entry, Button, Menu, Toplevel  # Used for GUI
+from os import system  # Used for logging into wifi networks via command line
 
 
 class CaptiveFi:
     def __init__(self, parent):
         # Initializes variables
-        self.label_names = "Wifi Name", "Wifi Password", "Username", "Password", "Login Page"  # Name of each label
+        self.label_names = "Wifi Name", "Wifi Password", "Username", "Above Field", \
+                           "Password", "Above Field", "Login Page"  # Name of each label
         self.parent = parent
         parent.winfo_toplevel().title("captiveFi")  # Sets title
         self.my_input = []
@@ -20,16 +22,19 @@ class CaptiveFi:
 
         # Creating file submenu and menu items
         file = Menu(menu)
-        file.add_command(label="Run", command=self.run)
-        file.add_command(label="Clear", command=self.clear)
-        file.add_command(label="Save", command=self.run)  # replace with save
-        file.add_command(label="Load", command=self.run)  # replace with load
-        file.add_command(label="Exit", command=self.parent.quit)
+        file.add_command(label="Connect to Wifi", command=lambda: self.wifi_connect())
+        file.add_command(label="Connect to Captive Portal", command=lambda: self.captive_connect())
+        file.add_command(label="Connect to Both", command=lambda: self.both_connect())
+        file.add_command(label="Disconnect from Wifi", command=lambda: self.wifi_disconnect())
+        file.add_command(label="Clear Fields", command=self.clear)
+        file.add_command(label="Save", command=lambda: self.both_connect())  # replace with save
+        file.add_command(label="Load", command=lambda: self.both_connect())  # replace with load
+        file.add_command(label="Exit Program", command=self.parent.quit)
 
         # Creating tools submenu and menu items
         tools = Menu(menu)
-        tools.add_command(label="Set Autoload", command=self.run)  # replace with auto_load
-        tools.add_command(label="Set AutoRun", command=self.run)  # replace with auto_run
+        tools.add_command(label="Set Auto Load", command=lambda: self.both_connect())  # replace with auto_load
+        tools.add_command(label="Set Auto Run", command=lambda: self.both_connect())  # replace with auto_run
 
         # Creating help submenu and menu items
         help_menu = Menu(menu)
@@ -56,26 +61,39 @@ class CaptiveFi:
             temp_entry.grid(row=row_origin, column=2, padx="15", pady="5")
             row_origin += 1
 
-    def run(self):
+    # Connects to wifi using data inputted into the GUI
+    def wifi_connect(self):
         if self.my_input[0].get():  # Wifi Name exists
             print("Wifi Name:", self.my_input[0].get())
             if self.my_input[1].get():  # Wifi is password protected
                 print("Wifi password", self.my_input[1].get())
             else:  # Wifi is not password protected
-                print("No Wifi password")
-            if self.my_input[2].get() and self.my_input[3].get():  # Login credentials exist
-                print("Login username:", self.my_input[2].get(), "and password:", self.my_input[3].get())
-            else:
-                print("No Login username and password")
+                system("netsh wlan connect " + self.my_input[0].get())  # Connects to wifi through cmd
+        else:  # Wifi Name does not exist
+            print("Error: Please input wifi name.")
+
+    # Connects to captive portal using data inputted into the GUI
+    def captive_connect(self):
+        if self.my_input[2].get() and self.my_input[3].get():  # Login credentials exist
+            print("Login username:", self.my_input[2].get(), "and password:", self.my_input[3].get())
+        else:
+            print("No Login username and password")
+
+    # Connects to wifi and to captive portal
+    def both_connect(self):
+        self.wifi_connect()
+        self.captive_connect()
+
+    # Disconnects from the wifi that is in wifi name
+    def wifi_disconnect(self):
+        if self.my_input[0].get():  # Wifi Name exists
+            system("netsh wlan disconnect " + self.my_input[1].get())  # Connects to wifi through cmd
         else:  # Wifi Name does not exist
             print("Error: Please input wifi name.")
 
     def clear(self):
         for ele in self.my_input:
             ele.delete(0, 'end')
-
-    def print(self):
-        print(self.entry.get())
 
     # Makes a popup on the current window using title and message
     @staticmethod
@@ -99,6 +117,6 @@ class CaptiveFi:
 
 
 root = Tk()  # New window
-root.geometry("215x155")  # Size of window
+root.geometry("215x220")  # Size of window
 gui = CaptiveFi(root)  # Instance of CaptiveFi using root
 root.mainloop()  # Starts the program
