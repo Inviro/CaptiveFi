@@ -1,3 +1,13 @@
+"""
+CaptiveFi - A simple script dreaming of automation of captive portal logins
+Website: https://github.com/Inviro/CaptiveFi
+Open source under GNU General Public License v3.0
+
+This is a side project of mine, and it was inspired by the needles amount of time spent just logging into captive portals.
+I hope that it makes things run a bit more smoothly for anyone using this program.
+"""
+
+
 from tkinter import Tk, Label, Entry, Button, Menu, Toplevel  # Used for GUI
 from os import system  # Used for logging into wifi networks via command line
 
@@ -29,6 +39,7 @@ class CaptiveFi:
         file.add_command(label="Clear Fields", command=self.clear)
         file.add_command(label="Save", command=lambda: self.both_connect())  # replace with save
         file.add_command(label="Load", command=lambda: self.both_connect())  # replace with load
+        file.add_command(label="Export", command=lambda: self.both_connect())  # replace with export
         file.add_command(label="Exit Program", command=self.parent.quit)
 
         # Creating tools submenu and menu items
@@ -109,11 +120,11 @@ class CaptiveFi:
 
     # Opens up credits: including the developers, dependencies, and copyright
     def credits(self):
-        self.popup_message("Credits",
+        self.popup_message("Credits",  # Name of window
                            "CaptiveFi - A script dreaming of freedom from manual captive logins.\n"
-                           "Website: https://github.com/Inviro/CaptiveFi\n"
-                           "Open Source under the GNU General Public License v3.0\n",
-                           "380x90")
+                           "Website: https://github.com/Inviro/CaptiveFi\n"  # Website
+                           "Open Source under the GNU General Public License v3.0\n",  # Open source license
+                           "380x90")  # Size of window
 
 
 root = Tk()  # New window
