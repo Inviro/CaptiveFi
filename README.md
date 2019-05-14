@@ -1,5 +1,5 @@
 # CaptiveFi
-A script and simple GUI that automates wifi network and captive portal logins.
+A tool used for logging into captive portals once, and then automating the rest of the logins.
 
 Planned features: 
 * Automatic login into captive portals that require manual clicks / username entry
