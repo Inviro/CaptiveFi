@@ -8,44 +8,53 @@ I hope that it makes things run a bit more smoothly for anyone using this progra
 """
 
 
-from tkinter import Tk, Label, Entry, Button, Menu, Toplevel  # Used for GUI
+from tkinter import Tk, Label, Entry, Button, Menu, Toplevel, IntVar, Checkbutton  # Used for GUI
 from os import system, environ  # Used for logging into wifi networks via command line
 
 # Used for opening a website and putting in credentials
 from selenium import webdriver  # Basic Web Driver
 from selenium.webdriver.support.ui import WebDriverWait as WDWait  # Ensures that fields pop up
-from selenium.webdriver.support import expected_conditions as ec  # Used for checking conditions of previous
+# from selenium.webdriver.support import expected_conditions as ec  # Used for checking conditions of previous
 from selenium.webdriver.support.expected_conditions import presence_of_element_located as p_ele_located
 from selenium.webdriver.common.by import By
-from time import sleep
+# from time import sleep
+from collections import defaultdict  # Used to create dictionaries with lists as keys
 
 
 class CaptiveFi:
     def __init__(self, parent):
         # Initializes variables
+        self.__row_number = 15
+
         # Label Names
-        self._label_names = "Wifi Name", "Wifi Password", "Username", "User field", \
-                           "Password", "Pass field", "Login Page", "✓Box Field", \
-                           "Submit Field"
+        self._label_names = "Wifi Name", "Wifi Password", "Login Page"
 
         # Constants
         self._WN = 0
         self._WP = 1
-        self._U = 2
-        self._UF = 3
-        self._P = 4
-        self._PF = 5
-        self._LP = 6
-        self._CF = 7
-        self._S = 8
+        self._LP = 2
 
         self.__parent = parent
         self.__parent.winfo_toplevel().title("captiveFi")  # Sets title
+        self.__parent.resizable(False, False)  # Not resizeable
+        self._x_dim = 500
+        self._y_dim = 0
+        self.__set_window_size()
+
         self._my_input = []
+        self._my_check_var = []
+        self._button_value = ''
 
         # Makes menu and entry grid
-        self.__make_grid()  # Makes the label and entry pairs from _label_names
         self.__make_menu()
+        self.__make_grid(self._label_names, '101')
+
+    def __set_window_size(self):
+        self.__parent.geometry(f'{self._x_dim}x{self._y_dim}')
+
+    def __add_items(self, num_items):
+        self._y_dim += 32 * num_items
+        self.__set_window_size()
 
     def __make_menu(self):
         __menu = Menu(self.__parent)
@@ -77,19 +86,42 @@ class CaptiveFi:
         __menu.add_cascade(label="Tools", menu=__tools)
         __menu.add_cascade(label="Options", menu=__help_menu)
 
-    def __make_grid(self):
-        row_origin = 15  # Row number to begin making the grid
-        for name in self._label_names:
-            __temp_label = Label(width=10, text=name+":", anchor="c")
-            if "Password" in name:
-                __temp_entry = Entry(show="*", width=10)
+    def __make_grid(self, label_names, show_hide):
+        for idx, name in enumerate(label_names):
+            __temp_label = Label(width=35, text=name+":", anchor="c")
+            if show_hide[idx] == "0":
+                __temp_entry = Entry(show="*", width=20)
             else:
-                __temp_entry = Entry(width=10)
-
+                __temp_entry = Entry(width=20)
             self._my_input.append(__temp_entry)
-            __temp_label.grid(row=row_origin, column=1, padx="15", pady="5")
-            __temp_entry.grid(row=row_origin, column=2, padx="15", pady="5")
-            row_origin += 1
+            __temp_label.grid(row=self.__row_number, column=1, padx="15", pady="5")
+            __temp_entry.grid(row=self.__row_number, column=2, padx="15", pady="5")
+            self.__row_number += 1
+        self.__add_items(len(label_names))
+
+    def __make_check_box(self, checkbox_names, current_state):
+        for idx, name in enumerate(checkbox_names):
+            __temp_label = Label(width=35, text=name + ":", anchor="c")
+            __temp_var = IntVar(value=int(current_state[idx]))
+            __temp_checkbox = Checkbutton(variable=__temp_var)
+
+            self._my_check_var.append(__temp_var)
+            __temp_label.grid(row=self.__row_number, column=1, padx="15", pady="5")
+            __temp_checkbox.grid(row=self.__row_number, column=2, padx="15", pady="5")
+            self.__row_number += 1
+        self.__add_items(len(checkbox_names))
+
+    def __make_button(self, button_names, _browser):
+        for name in button_names:
+            __temp_button = Button(text=name, command=lambda: self.__button_click(_browser))
+
+            self._my_button = __temp_button
+            __temp_button.grid(row=self.__row_number, column=1, padx="15", pady="5")
+            self.__row_number += 1
+        self.__add_items(len(button_names))
+
+    def __button_click(self, _browser):
+        _browser.find_element_by_xpath(f"//input[@value='{self._button_value}']").submit()
 
     # Connects to wifi using data inputted into the GUI
     def __wifi_connect(self):
@@ -104,23 +136,58 @@ class CaptiveFi:
 
     # Connects to captive portal using data inputted into the GUI
     def __captive_connect(self):
-        if self._my_input[self._U].get() and self._my_input[self._P].get():  # Login credentials exist
-            print("Login username:", self._my_input[self._U].get(), "and password:", self._my_input[self._P].get())
-            environ['MOZ_HEADLESS'] = '1'
-            _browser = webdriver.Firefox()
-            _browser.get(self._my_input[self._LP].get())
-            __username = WDWait(_browser, 10).until(p_ele_located((By.NAME, self._my_input[self._UF].get())))
-            __password = WDWait(_browser, 10).until(p_ele_located((By.NAME, self._my_input[self._PF].get())))
-            __username.send_keys(self._my_input[self._U].get())
-            __password.send_keys(self._my_input[self._P].get())
-            _check_box = WDWait(_browser, 10).until(ec.element_to_be_clickable(By.NAME, self._my_input[self._UF].get()))
-            _check_box.click()
-            __submit_button = _browser.find_element_by_id("ID_form6ecb360b_weblogin_submit")
-            __submit_button.submit()
-            sleep(2)  # Makes sure that it logs in properly
-            _browser.close()
+        def set_field(element):  # Waits for the field, then clicks it
+            element_name = element.get_attribute('name')  # Gets the name of the element
+            WDWait(_browser, 10).until(p_ele_located((By.NAME, element_name)))  # Waits until element is present
+            element.click()  # Clicks element
+
+        def set_field_text(element, text):  # Sends keys to the field after calling set_field
+            set_field(element)
+            element.send_keys(text)
+
+        # environ['MOZ_HEADLESS'] = '1'
+
+        __login_page = self._my_input[self._LP].get()
+        if __login_page:  # There is a captive portal page present
+            _browser = webdriver.Firefox(service_log_path='')
+            _browser.get(__login_page)
+            __my_elements = _browser.find_elements_by_xpath('//input')  # Sets my_elements to all inputs
+            __my_dict = defaultdict(list)  # Dictionary with list as value
+            for __ele in __my_elements:  # For each element in the list, append it to the list at the value of the key
+                # if __ele.is_displayed():  # Only for visible elements
+                __my_dict[__ele.get_attribute('type')].append(__ele)  # Append element to value at key
+            __temp = 0
+            print(__my_dict)
+
+            for key, value in __my_dict.items():  # For each key value pair
+                print(key)
+                temp = []
+                temp_state = []
+                if key == 'text' or key == 'email':
+                    for ele in value:
+                        temp.append(ele.get_attribute('name'))
+                    self.__make_grid(temp, len(temp) * '1')
+                elif key == 'checkbox':
+                    for ele in value:
+                        temp.append(ele.get_attribute('name'))
+                        temp_state.append(ele.is_selected())
+                    self.__make_check_box(temp, temp_state)
+                elif key == 'radio':
+                    for ele in value:
+                        set_field(ele)
+                elif key == 'password':
+                    temp = []
+                    for ele in value:
+                        temp.append(ele.get_attribute('name'))
+                    self.__make_grid(temp, len(temp) * '0')
+                elif key == 'submit':
+                    temp = []
+                    for ele in value:
+                        temp.append(ele.get_attribute('value'))
+                        self._my_button = ele
+                    self.__make_button(temp, _browser)
         else:
-            print("No Login username and password")
+            print('Error: No captive portal page entered.')
 
     # Connects to wifi and to captive portal
     def __both_connect(self):
@@ -130,7 +197,7 @@ class CaptiveFi:
     # Disconnects from the wifi that is in wifi name
     def __wifi_disconnect(self):
         if self._my_input[self._WN].get():  # Wifi Name exists
-            system("netsh wlan disconnect " + self._my_input[self._WP].get())  # Connects to wifi through cmd
+            system("netsh wlan disconnect")  # Connects to wifi through cmd
         else:  # Wifi Name does not exist
             print("Error: Please input wifi name.")
 
@@ -161,8 +228,6 @@ class CaptiveFi:
 
 def main():
     root = Tk()  # New window
-    root.geometry("215x280")  # Size of window
-    root.resizable(False, False)  # Not resizeable
     CaptiveFi(root)  # Instance of CaptiveFi using root
     root.mainloop()  # Starts the program
 
