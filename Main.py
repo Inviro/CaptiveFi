@@ -19,6 +19,7 @@ from selenium.webdriver.support.expected_conditions import presence_of_element_l
 from selenium.webdriver.common.by import By
 # from time import sleep
 from collections import defaultdict  # Used to create dictionaries with lists as keys
+from selenium.common.exceptions import InvalidArgumentException
 
 
 class CaptiveFi:
@@ -33,6 +34,7 @@ class CaptiveFi:
         self._WN = 0
         self._WP = 1
         self._LP = 2
+        self._RESIZE_CONSTANT = 32  # y dimension value by which the window is resized per element
 
         self.__parent = parent
         self.__parent.winfo_toplevel().title("captiveFi")  # Sets title
@@ -42,6 +44,7 @@ class CaptiveFi:
         self.__set_window_size()
 
         self._my_input = []
+        self._my_input_ele = []
         self._my_check_var = []
         self._button_value = ''
 
@@ -50,13 +53,26 @@ class CaptiveFi:
         self.__make_grid(self._label_names, '101')
 
     def __set_window_size(self):
+        """
+        Sets the window size using self._x_dim and self._y_dim
+        :return: None.
+        """
         self.__parent.geometry(f'{self._x_dim}x{self._y_dim}')
 
     def __add_items(self, num_items):
-        self._y_dim += 32 * num_items
+        """
+        Resizes the window based on a parameter of extra elements
+        :param num_items: Number of extra elements for which the window needs to dynamically resize
+        :return: None.
+        """
+        self._y_dim += self._RESIZE_CONSTANT * num_items
         self.__set_window_size()
 
     def __make_menu(self):
+        """
+        Makes the basic GUI and assigns each menu and submenu an appropriate command.
+        :return: None.
+        """
         __menu = Menu(self.__parent)
         self.__parent.config(menu=__menu)
 
@@ -87,6 +103,12 @@ class CaptiveFi:
         __menu.add_cascade(label="Options", menu=__help_menu)
 
     def __make_grid(self, label_names, show_hide):
+        """
+        Converts a list of strings into a simple GUI which contains a label and an entry box
+        :param label_names: List of strings for which the GUI is going to make labels and entry boxes
+        :param show_hide: Bitstring of boolean values corresponding to the hidden attribute of elements in label_names
+        :return:
+        """
         for idx, name in enumerate(label_names):
             __temp_label = Label(width=35, text=name+":", anchor="c")
             if show_hide[idx] == "0":
@@ -120,7 +142,30 @@ class CaptiveFi:
             self.__row_number += 1
         self.__add_items(len(button_names))
 
+    def __send_data(self, _browser):
+        def set_field(element):  # Waits for the field, then clicks it
+            element_name = element.get_attribute('name')  # Gets the name of the element
+            xpath = f"//input[@name='{element_name}']"
+            element = WDWait(_browser, 10).until(p_ele_located((By.XPATH, xpath)))  # Waits until element is present
+            element.click()  # Clicks element
+            return element
+
+        def set_field_text(element, text):  # Sends keys to the field after calling set_field
+            set_field(element).send_keys(text)
+
+        # For each index and element after a certain constant
+        for idx, ele in enumerate(self._my_input[self._LP + 1:]):
+            temp = ele.get()  # Sets temp to the text in the gui entry field
+            if temp:  # If there is text in the entry field
+                set_field_text(self._my_input_ele[idx], temp)  # Set the element in the browser to it
+
     def __button_click(self, _browser):
+        """
+        Sets the fields in the browser to the ones in the GUI, then sends the data
+        :param _browser: The browser in which the elements are found
+        :return: None.
+        """
+        self.__send_data(_browser)
         _browser.find_element_by_xpath(f"//input[@value='{self._button_value}']").submit()
 
     # Connects to wifi using data inputted into the GUI
@@ -136,21 +181,15 @@ class CaptiveFi:
 
     # Connects to captive portal using data inputted into the GUI
     def __captive_connect(self):
-        def set_field(element):  # Waits for the field, then clicks it
-            element_name = element.get_attribute('name')  # Gets the name of the element
-            WDWait(_browser, 10).until(p_ele_located((By.NAME, element_name)))  # Waits until element is present
-            element.click()  # Clicks element
-
-        def set_field_text(element, text):  # Sends keys to the field after calling set_field
-            set_field(element)
-            element.send_keys(text)
-
         # environ['MOZ_HEADLESS'] = '1'
 
         __login_page = self._my_input[self._LP].get()
         if __login_page:  # There is a captive portal page present
             _browser = webdriver.Firefox(service_log_path='')
-            _browser.get(__login_page)
+            try:
+                _browser.get(__login_page)
+            except InvalidArgumentException:
+                pass
             __my_elements = _browser.find_elements_by_xpath('//input')  # Sets my_elements to all inputs
             __my_dict = defaultdict(list)  # Dictionary with list as value
             for __ele in __my_elements:  # For each element in the list, append it to the list at the value of the key
@@ -165,6 +204,7 @@ class CaptiveFi:
                 temp_state = []
                 if key == 'text' or key == 'email':
                     for ele in value:
+                        self._my_input_ele.append(ele)
                         temp.append(ele.get_attribute('name'))
                     self.__make_grid(temp, len(temp) * '1')
                 elif key == 'checkbox':
@@ -174,14 +214,13 @@ class CaptiveFi:
                     self.__make_check_box(temp, temp_state)
                 elif key == 'radio':
                     for ele in value:
-                        set_field(ele)
+                        print(ele)
                 elif key == 'password':
-                    temp = []
                     for ele in value:
+                        self._my_input_ele.append(ele)
                         temp.append(ele.get_attribute('name'))
                     self.__make_grid(temp, len(temp) * '0')
                 elif key == 'submit':
-                    temp = []
                     for ele in value:
                         temp.append(ele.get_attribute('value'))
                         self._my_button = ele
