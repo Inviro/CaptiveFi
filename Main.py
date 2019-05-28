@@ -43,10 +43,11 @@ class CaptiveFi:
         self._y_dim = 0
         self.__set_window_size()
 
-        self._my_input = []
-        self._my_input_ele = []
-        self._my_check_var = []
-        self._button_value = ''
+        self._my_input = []         # Used to store entries in label / entry pairs
+        self._my_input_ele = []     # Used to store the elements corresponding to the previous list inputs
+        self._my_check_var = []     # Used to store checkboxes
+        self._my_radios = []        # Used to store all of the radio buttons
+        self._button_value = ''     # Used to store the name of the submit button field
 
         # Makes menu and entry grid
         self.__make_menu()
@@ -83,15 +84,15 @@ class CaptiveFi:
         __file.add_command(label="Connect to Both", command=lambda: self.__both_connect())
         __file.add_command(label="Disconnect from Wifi", command=lambda: self.__wifi_disconnect())
         __file.add_command(label="Clear Fields", command=self.__clear)
-        __file.add_command(label="Save", command=lambda: self.__both_connect())  # replace with save
-        __file.add_command(label="Load", command=lambda: self.__both_connect())  # replace with load
-        __file.add_command(label="Export", command=lambda: self.__both_connect())  # replace with export
+        __file.add_command(label="Save", command=lambda: self.__both_connect())     # replace with save
+        __file.add_command(label="Load", command=lambda: self.__both_connect())     # replace with load
+        __file.add_command(label="Export", command=lambda: self.__both_connect())   # replace with export
         __file.add_command(label="Exit Program", command=self.__parent.quit)
 
         # Creating __tools submenu and menu items
         __tools = Menu(__menu)
-        __tools.add_command(label="Set Auto Load", command=lambda: self.__both_connect())  # replace with auto_load
-        __tools.add_command(label="Set Auto Run", command=lambda: self.__both_connect())  # replace with auto_run
+        __tools.add_command(label="Set Auto Load", command=lambda: self.__both_connect())   # replace with auto_load
+        __tools.add_command(label="Set Auto Run", command=lambda: self.__both_connect())    # replace with auto_run
 
         # Creating help submenu and menu items
         __help_menu = Menu(__menu)
@@ -145,7 +146,7 @@ class CaptiveFi:
     def __send_data(self, _browser):
         def set_field(element):  # Waits for the field, then clicks it
             element_name = element.get_attribute('name')  # Gets the name of the element
-            xpath = f"//input[@name='{element_name}']"
+            xpath = f"//input[@name='{element_name}']"  # Creates an xpath based on an a given element name
             element = WDWait(_browser, 10).until(p_ele_located((By.XPATH, xpath)))  # Waits until element is present
             element.click()  # Clicks element
             return element
@@ -153,7 +154,7 @@ class CaptiveFi:
         def set_field_text(element, text):  # Sends keys to the field after calling set_field
             set_field(element).send_keys(text)
 
-        # For each index and element after a certain constant
+        # For each index and element per text input after a certain constant
         for idx, ele in enumerate(self._my_input[self._LP + 1:]):
             temp = ele.get()  # Sets temp to the text in the gui entry field
             if temp:  # If there is text in the entry field
@@ -196,12 +197,14 @@ class CaptiveFi:
                 # if __ele.is_displayed():  # Only for visible elements
                 __my_dict[__ele.get_attribute('type')].append(__ele)  # Append element to value at key
             __temp = 0
-            print(__my_dict)
+            print(__my_dict)  # """Debug"""
 
             for key, value in __my_dict.items():  # For each key value pair
-                print(key)
+                print(key)  # """Debug"""
                 temp = []
                 temp_state = []
+
+                # Switch case for types of input
                 if key == 'text' or key == 'email':
                     for ele in value:
                         self._my_input_ele.append(ele)
@@ -219,7 +222,7 @@ class CaptiveFi:
                     for ele in value:
                         self._my_input_ele.append(ele)
                         temp.append(ele.get_attribute('name'))
-                    self.__make_grid(temp, len(temp) * '0')
+                    self.__make_grid(temp, len(temp) * '0')  # Makes hidden entry fields for the passwords
                 elif key == 'submit':
                     for ele in value:
                         temp.append(ele.get_attribute('value'))
