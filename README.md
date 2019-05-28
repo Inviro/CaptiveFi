@@ -10,7 +10,7 @@ Current functionality:
 * Detecting most fields in captive portals other than radio buttons are working
 * Submitting fields through getting data from tkinter and sending the data through Selenium is mostly working
 
-
+![Here it is in Action!](https://raw.githubusercontent.com/Inviro/CaptiveFi/master/Assets/InAction.png)
 
 Planned features: 
 * Automatic login into captive portals that require manual clicks / username entry
