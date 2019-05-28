@@ -10,6 +10,8 @@ Current functionality:
 * Detecting most fields in captive portals other than radio buttons are working
 * Submitting fields through getting data from tkinter and sending the data through Selenium is mostly working
 
+
+
 Planned features: 
 * Automatic login into captive portals that require manual clicks / username entry
 * System for saved logins
